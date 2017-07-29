@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			html, body, ul, li {
+				margin: 0;
+				padding: 0;
+			}
+			ul {
+				list-style: none;
+			}
+			.box {
+				position: relative;
+				width: 720px;
+				height: 480px;
+				margin: 50px auto 0 auto;
+			}
+			.img {
+				position: absolute;
+				opacity: 0;
+				transition: all .5s ease;
+			}
+			.img_on {
+				opacity: 1;
+			}
+			.boxs {
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				width: 100%;
+				height: 40px;
+				line-height: 20px;
+				vertical-align: bottom;
+				text-align: center;
+			}
+			.dot {
+				display: inline-block;
+				margin: 0 10px;
+				width: 20px;
+				height: 20px;
+				border-radius: 50%;
+				background: #FFFFFF;
+			}
+			.dot_on {
+				background: lightblue;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="box">
+		</div>
+		<script type="text/javascript">
+			function Lunbo(parentElem, imgs, interval) {
+				this.parentElem = typeof parentElem === 'string' ? document.getElementsByClassName(parentElem)[0] : parentElem;
+				this.imgs = imgs;
+				this.defineReactive(this, 'index', 0);
+				this.interval = interval || 1000;
+				this.init();
+			}
+			Lunbo.prototype = {
+				init: function() {
+					var li,
+						img,
+						len = this.imgs.length,
+						ul = document.createElement('ul');
+					
+					for(var i = 0; i < len; i++) {
+						li = document.createElement('li');
+						li.className = 'img';
+						if(i === 0) {
+							li.className = li.className + ' img_on';
+						}
+						img = document.createElement('img');
+						img.src = this.imgs[i];
+						li.appendChild(img)
+						ul.appendChild(li);
+					}
+					this.parentElem.appendChild(ul);
+					
+					var dots = document.createElement('ul');
+					dots.className = 'boxs';
+					var dot;
+					for(var i = 0; i < len; i++) {
+						dot = document.createElement('li');
+						dot.className = 'dot dot' + i;
+						if(i === 0){
+							dot.className = dot.className + ' dot_on';
+						}
+						dots.appendChild(dot);
+					}				
+					this.parentElem.appendChild(dots);
+					this.bindEvent();
+					this.setTimer();
+				},
+				bindEvent: function() {
+					var _self = this;
+					var dot = document.getElementsByClassName('dot');
+					for(var i = 0, len = dot.length; i < len; i++) {
+						dot[i].onmouseenter = function(){
+							_self.clearTimer();
+							var ret = this.className.match(/(dot)(\d)/);
+							ret && (_self.index = +ret[2]);
+						}
+						dot[i].onmouseleave = function(){
+							_self.setTimer();
+						}
+					}
+				},
+				defineReactive: function(data, key, val) {
+					var dot, imgs;
+					var index = val;
+    				Object.defineProperty(data, key, {
+        				enumerable: true,
+        				configurable: false,
+       					get: function() {
+            				return index;
+        				},
+        				set: function(i) {
+        					var preIndex = index;
+        					if(i !== preIndex) {
+        						dot = document.getElementsByClassName('dot');
+								imgs = document.getElementsByClassName('img');
+        						dot[preIndex].className = dot[preIndex].className.replace(/\sdot_on/, '');
+								imgs[preIndex].className = imgs[preIndex].className.replace(/\simg_on/, '');
+								index = i;
+								imgs[index].className = imgs[index].className + ' img_on';
+								dot[index].className = dot[index].className + ' dot_on';
+        					}
+        				}
+    				});
+				},
+				setTimer: function(){
+					var _self = this;
+					var _len = _self.imgs.length - 1
+					this.timerId = setInterval(function(){
+						if(_self.index === _len){
+							_self.index = 0;
+						}else {
+							_self.index++;
+						}
+					}, this.interval);
+				},
+				clearTimer: function(){
+					clearInterval(this.timerId);
+					this.timerId = null;
+				}
+			}
+			var imgs = ['./img/1.jpeg', './img/2.jpg', './img/3.jpeg', './img/4.jpeg']
+			new Lunbo('box', imgs);
+		</script>
+	</body>
+</html>
